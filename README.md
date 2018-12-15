@@ -1,4 +1,4 @@
-For generating candidate Wikipedia entities for entity linking.  
+For generating candidate Wikipedia entities for entity linking. This is a part of the code for the [xelms](https://github.com/shyamupa/xelms) project.
 
 ### Requirements
 1. The output of the [wikidump_preprocessing](https://github.com/shyamupa/wikidump_preprocessing) generated under the OUTDIR folder, is required for this project. Follow the instructions in that repo for the language of your choice. You also need to prepare the output for the English Wikipedia. 
