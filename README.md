@@ -3,7 +3,7 @@ For generating candidate Wikipedia entities for entity linking.
 ### Requirements
 1. The output of the [wikidump_preprocessing](https://github.com/shyamupa/wikidump_preprocessing) generated under the OUTDIR folder, is required for this project. Follow the instructions in that repo for the language of your choice. You also need to prepare the output for the English Wikipedia. 
 
-I usually make a softlink to the outdir folders generated above under a `data` folder
+Make a softlink to the outdir folders generated above under a `data` folder
 ```bash
 $ ln -s path/to/outdir/for/enwiki data/enwiki
 ```  
@@ -31,8 +31,9 @@ The `TitleNormalizer` class is used to resolve ambiguities with multiple titles 
 ### Interactive Mode
 The interactive mode for candidate generation allows the user to insert a surface form and immediately see the query results in CLI. To run in interactive mode, run: 
 ```bash
-python3 -m wiki_kb.candidate_gen_v2 --lang en --numcands 10 --interactive
+python3 -m wiki_kb.candidate_gen_v2 --lang en --numcands 10 --date 20170520 --interactive
 ```
+Where date is the timestamp of the Wikipedia dump that was processed.
 With the interactive flag, the user can enter a surface form as a query string. Here is a example interaction, (user inputs "chicago")
 
 ```
