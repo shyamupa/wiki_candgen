@@ -8,18 +8,21 @@ __author__ = 'Shyam'
 
 
 class TitleNormalizer:
-    def __init__(self, lang="en", redirect_map=None, t2id=None, id2t=None, redirect_set=None,date='20170520', prep_lower2upper=False):
+    def __init__(self, lang="en", redirect_map=None, t2id=None, id2t=None, redirect_set=None, date='20170520',
+                 prep_lower2upper=False, hostname="localhost"):
         if t2id is None:
-            id2t, t2id, redirect_set = load_id2title_mongo('data/{}wiki/idmap/{}wiki-{}.id2t'.format(lang,lang,date))
+            id2t, t2id, redirect_set = load_id2title_mongo('data/{}wiki/idmap/{}wiki-{}.id2t'.format(lang, lang, date),
+                                                           hostname=hostname)
         if redirect_map is None:
-            redirect_map = load_redirects_mongo('data/{}wiki/idmap/{}wiki-{}.r2t'.format(lang,lang,date))
+            redirect_map = load_redirects_mongo('data/{}wiki/idmap/{}wiki-{}.r2t'.format(lang, lang, date),
+                                                hostname=hostname)
         self.null_counts = 0
         self.call_counts = 0
         self.lang = lang
         self.redirect_map = redirect_map
         self.title2id, self.id2title, self.redirect_set = t2id, id2t, redirect_set
         if prep_lower2upper:
-            self.lower2upper = {title.lower():title for title in self.title2id}
+            self.lower2upper = {title.lower(): title for title in self.title2id}
             for redirect in self.redirect_map:
                 self.lower2upper[redirect.lower()] = self.redirect_map[redirect]
 

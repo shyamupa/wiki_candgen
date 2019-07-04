@@ -8,7 +8,7 @@ import logging
 from wiki_kb.title_normalizer_v2 import TitleNormalizer
 from wiki_kb.candidate_utils import combine_duplicates_n_sort
 from utils.constants import NULL_TITLE
-from utils.misc_utils import load_nekb, load_prob_map, load_langlinks, load_langlinks_mongo, load_prob_map_mongo
+from utils.misc_utils import load_nekb, load_langlinks_mongo, load_prob_map_mongo
 
 logging.basicConfig(format='%(asctime)s: %(filename)s:%(lineno)d: %(message)s', level=logging.INFO)
 from utils.text_utils import tokenizer
@@ -19,11 +19,13 @@ __author__ = 'Shyam'
 
 
 class CandidateGenerator:
-    def __init__(self, lang, date="20170520", K=10, fallback=True, use_eng=False, kbfile=None, debug=False):
+    def __init__(self, lang, date="20170520", K=10, fallback=True, use_eng=False, kbfile=None, debug=False,
+                 hostname="localhost"):
         self.lang = lang
         self.date = date
+        self.hostname = hostname
         if self.lang != "en":
-            self.fr2entitles, _ = load_langlinks_mongo(lang)
+            self.fr2entitles, _ = load_langlinks_mongo(lang, hostname=hostname)
         else:
             self.fr2entitles = None
         self.K = K
@@ -41,15 +43,17 @@ class CandidateGenerator:
             logging.info("will fallback to word level")
 
     def load_probs(self, out_prefix):
-        self.p2t2prob = load_prob_map_mongo(out_prefix, "p2t2prob")
+        hostname = self.hostname
+        self.p2t2prob = load_prob_map_mongo(out_prefix, "p2t2prob", hostname=hostname)
         # self.t2p2prob = load_prob_map(out_prefix, "t2p2prob")
         if self.fallback:
-            self.w2t2prob = load_prob_map_mongo(out_prefix, "w2t2prob")
+            self.w2t2prob = load_prob_map_mongo(out_prefix, "w2t2prob", hostname=hostname)
             # self.t2w2prob = load_prob_map(out_prefix, "t2w2prob")
         if self.use_eng:
             logging.info("also using ENG probs")
-            self.en_p2t2prob = load_prob_map_mongo("data/enwiki/probmap/enwiki-{}".format(self.date), "p2t2prob")
-            self.en_w2t2prob = load_prob_map_mongo("data/enwiki/probmap/enwiki-{}".format(self.date), "w2t2prob")
+            en_wiki_path = "data/enwiki/probmap/enwiki-{}".format(self.date)
+            self.en_p2t2prob = load_prob_map_mongo(en_wiki_path, "p2t2prob", hostname=hostname)
+            self.en_w2t2prob = load_prob_map_mongo(en_wiki_path, "w2t2prob", hostname=hostname)
 
     def get_candidates(self, surface, pretokenized=False):
         cands = self.__get_candidate_by_phrase(lang=self.lang,
@@ -192,12 +196,13 @@ if __name__ == '__main__':
     parser.add_argument('--numcands', type=int, default=10, help='max # of cands')
     parser.add_argument('--nofallback', action="store_true", help='whether to fallback to word level cand gen or not')
     parser.add_argument('--interactive', action="store_true", help='interactive candgen mode for debug')
+    parser.add_argument('--mongohostname', type=str, help='hostname for mongo DB', default="localhost")
     args = parser.parse_args()
     args = vars(args)
     g = CandidateGenerator(kbfile=args["kbfile"], K=args["numcands"], lang=args["lang"],
-                           fallback=not args["nofallback"], debug=True)
+                           fallback=not args["nofallback"], debug=True, hostname=args["mongohostname"])
     g.load_probs("data/{}wiki/probmap/{}wiki-{}".format(args["lang"], args["lang"], args["date"]))
-    title_normalizer = TitleNormalizer(lang="en")
+    title_normalizer = TitleNormalizer(lang="en", hostname=args["mongohostname"], date=args["date"])
 
     if args["interactive"]:
         try:

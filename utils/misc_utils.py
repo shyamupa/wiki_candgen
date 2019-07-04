@@ -46,8 +46,10 @@ def load_langlinks(lang):
     return fr2entitles, en2frtitles
 
 
-def load_langlinks_mongo(lang, overwrite=False):
-    fr2entitles, en2frtitles = load_map_mongo("data/" + lang + "wiki/idmap/fr2entitles", overwrite=overwrite)
+def load_langlinks_mongo(lang, overwrite=False, hostname="localhost"):
+    fr2entitles, en2frtitles = load_map_mongo("data/" + lang + "wiki/idmap/fr2entitles",
+                                              overwrite=overwrite,
+                                              hostname=hostname)
     return fr2entitles, en2frtitles
 
 
@@ -81,8 +83,8 @@ def load_map(path):
     return m, rev_m
 
 
-def load_map_mongo(path, overwrite=False):
-    m = MongoBackedDict(dbname=path)
+def load_map_mongo(path, overwrite=False, hostname="localhost"):
+    m = MongoBackedDict(dbname=path, hostname=hostname)
     rev_m = None
     if m.size() == 0 or overwrite:
         logging.info("dropping existing collection ...")
@@ -135,10 +137,10 @@ def load_id2title(f):
     return id2t, t2id, redirect_set
 
 
-def load_id2title_mongo(path, overwrite=False):
-    mongo_id2t = MongoBackedDict(dbname=path + ".id2t")
+def load_id2title_mongo(path, overwrite=False, hostname="localhost"):
+    mongo_id2t = MongoBackedDict(dbname=path + ".id2t", hostname=hostname)
     # TODO Maybe you can use the same db and its reverse?
-    mongo_t2id = MongoBackedDict(dbname=path + ".t2id")
+    mongo_t2id = MongoBackedDict(dbname=path + ".t2id", hostname=hostname)
     # TODO fix below
     redirect_set = None
     if mongo_id2t.size() == 0 or mongo_t2id.size() == 0 or overwrite:
@@ -201,13 +203,13 @@ def load_redirects(path):
     return redirect2title
 
 
-def load_redirects_mongo(path, overwrite=False):
+def load_redirects_mongo(path, overwrite=False, hostname="localhost"):
     # pkl_path = path + ".pkl"
     # if os.path.exists(pkl_path):
     # logging.info("pkl found! loading map %s", pkl_path)
     # r2t = load(pkl_path)
     # else:
-    mongo_r2t = MongoBackedDict(dbname=path)
+    mongo_r2t = MongoBackedDict(dbname=path, hostname=hostname)
     if mongo_r2t.size() == 0 or overwrite:
         logging.info("db not found at %s. creating ...", path)
         f = open(path)
@@ -286,12 +288,12 @@ def load_prob_map(out_prefix, kind):
     return mmap
 
 
-def load_prob_map_mongo(out_prefix, kind, dbname=None, force_rewrite=False):
+def load_prob_map_mongo(out_prefix, kind, dbname=None, force_rewrite=False, hostname="localhost"):
     path = out_prefix + "." + kind
     if dbname is None:
         dbname = path
     logging.info("dbname is %s", dbname)
-    probmap = MongoBackedDict(dbname=dbname)
+    probmap = MongoBackedDict(dbname=dbname, hostname=hostname)
     logging.info("reading collection %s", path)
     if probmap.size() > 0 and not force_rewrite:
         logging.info("collection already exists in db (size=%d). returning ...", probmap.size())
